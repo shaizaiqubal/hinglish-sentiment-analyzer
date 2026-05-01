@@ -9,8 +9,8 @@ key = os.getenv('YOUTUBE_API_KEY')
 youtube = build('youtube','v3',developerKey=key)
 
 #urls =[]
-vid_ids= ['BKOVzHcjEIo','NHk7scrb_9I','5XVoRGhrhZk','0IZS7ucM9qQ','znefLMNyVE8','nxUcxHMEUGg','QedpcsA-GOU','edx_qdEBAf0','g0CWxEuN2VI','RXeLbs_ogDU','uQoDmiMoXHg','8z_YVi-NycI','8YP81X1Jur4','xvvZATxs30M','vpNC1qM_cCE']
-
+#vid_ids= ['0IZS7ucM9qQ','znefLMNyVE8','nxUcxHMEUGg','QedpcsA-GOU','BKOVzHcjEIo','NHk7scrb_9I','5XVoRGhrhZk','edx_qdEBAf0','g0CWxEuN2VI','RXeLbs_ogDU','uQoDmiMoXHg','8z_YVi-NycI','8YP81X1Jur4','xvvZATxs30M','vpNC1qM_cCE']
+vid_ids=['zzwRbKI2pn4']
 
 # for i in urls:
 #      parsed = urlparse(i)
@@ -29,25 +29,26 @@ with open('yt_comment_dataset.csv', 'a' if csv_exists else 'w') as dataset:
     for i in range(len(vid_ids)):
 
         if not csv_exists:
-            writer.writerow(['video_id','video_title', 'comment', 'likes'])
+            writer.writerow(['video_id', 'comment', 'likes'])
 
         vid_id = vid_ids[i]
+        print(f'scraping {vid_id}....')
 
         # req_title = youtube.videos().list(part = "snippet", id=vid_id)
         # res_title = req_title.execute()
         # vid_title = res_title['items'][0]['snippet']['title']
-
+        count = 0
         next_page_token = None
         try:
             while True:
                     
-                    print(f'scraping {vid_id}....')
+                    
                     req_comments = youtube.commentThreads().list(
                     part='snippet',
                     videoId=vid_id,
                     textFormat='plainText',
                     pageToken=next_page_token,
-                    order='relevance'
+                    order='time'
                     )
 
                     res_comments = req_comments.execute()
@@ -57,12 +58,16 @@ with open('yt_comment_dataset.csv', 'a' if csv_exists else 'w') as dataset:
                         comment = comment.replace('\n','')
                         likes = int(item['snippet']['topLevelComment']['snippet']['likeCount'])
                         writer.writerow([vid_id, comment, likes])
+                        count+=1
 
 
                     next_page_token = res_comments.get('nextPageToken')
 
                     if not next_page_token:
                         break
+
+                    if count >= 1000:
+                         break
         
         except Exception as e:
             print(f"Error encountered at id {vid_id} : {e}")
