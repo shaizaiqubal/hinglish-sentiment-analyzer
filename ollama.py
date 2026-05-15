@@ -1,10 +1,14 @@
 import requests
 import pandas as pd
 
-df = pd.read_csv('data/comments.csv')
-df = df.head(10)
-dflang =[]
+df = pd.read_csv('yt_comments_dataset_v2.csv')
+# df = df[df['sentiment'].isna() | (df['sentiment'] == "")]
+OUTPUT_PATH = "yt_comment_datatest_v2_lang.csv"
+BATCH_SIZE = 100
 count = 1
+
+if "lang" not in df.columns:
+    df["lang"] = pd.NA
 
 def gen_prompt(comment):
     return f'''
@@ -19,7 +23,10 @@ def get_lang(response):
     lang = lang.split()[-1]
     return lang
 
-for comment in df['comment']:
+batch_indices = []
+batch_langs = []
+
+for idx, comment in df['comment'].items():
     print(f"processing comment {count}")
     prompt = gen_prompt(comment)
     try:
@@ -30,13 +37,21 @@ for comment in df['comment']:
         result = response.json()
         response = result['response']
         lang = get_lang(response)
-        dflang.append(lang)
-    
-    except:
-        dflang.append(None)
-        
+    except Exception:
+        lang = None
+
+    batch_indices.append(idx)
+    batch_langs.append(lang)
+
+    if count % BATCH_SIZE == 0:
+        df.loc[batch_indices, "lang"] = batch_langs
+        df.to_csv(OUTPUT_PATH, index=False)
+        batch_indices.clear()
+        batch_langs.clear()
+
     count += 1
 
-df['lang'] = dflang
+if batch_indices:
+    df.loc[batch_indices, "lang"] = batch_langs
 
-df.to_csv("yt_comment_datatest2.csv")
+df.to_csv(OUTPUT_PATH, index=False)
