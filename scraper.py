@@ -9,8 +9,9 @@ key = os.getenv('YOUTUBE_API_KEY')
 youtube = build('youtube','v3',developerKey=key)
 
 #urls =[]
-#vid_ids= ['0IZS7ucM9qQ','znefLMNyVE8','nxUcxHMEUGg','QedpcsA-GOU','BKOVzHcjEIo','NHk7scrb_9I','5XVoRGhrhZk','edx_qdEBAf0','g0CWxEuN2VI','RXeLbs_ogDU','uQoDmiMoXHg','8z_YVi-NycI','8YP81X1Jur4','xvvZATxs30M','vpNC1qM_cCE']
-vid_ids=['zzwRbKI2pn4']
+#vid_ids= ['0IZS7ucM9qQ','znefLMNyVE8','nxUcxHMEUGg','QedpcsA-GOU','BKOVzHcjEIo','NHk7scrb_9I','5XVoRGhrhZk','edx_qdEBAf0','g0CWxEuN2VI','RXeLbs_ogDU','uQoDmiMoXHg','8z_YVi-NycI','8YP81X1Jur4','xvvZATxs30M','vpNC1qM_cCE','zzwRbKI2pn4']
+vid_ids=["lFe5OA6uN8g","C3_mYPlvJeE","dpIJHTIEKC0",'ADllavPbUsg','WshNJefWEP8','WhvuONO1INQ','TNPtBnM4koE','QE6tkqvYW4']
+
 
 # for i in urls:
 #      parsed = urlparse(i)
@@ -21,7 +22,7 @@ vid_ids=['zzwRbKI2pn4']
      
 
 
-csv_exists = os.path.exists('yt_comment_dataset.csv')
+csv_exists = os.path.exists('yt_comment_dataset_v2.csv')
 
 with open('yt_comment_dataset.csv', 'a' if csv_exists else 'w') as dataset:
     writer = csv.writer(dataset)
@@ -48,7 +49,7 @@ with open('yt_comment_dataset.csv', 'a' if csv_exists else 'w') as dataset:
                     videoId=vid_id,
                     textFormat='plainText',
                     pageToken=next_page_token,
-                    order='time'
+                    order='relevance'
                     )
 
                     res_comments = req_comments.execute()
