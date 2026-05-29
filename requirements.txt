@@ -1,0 +1,10 @@
+fastapi
+google-api-python-client
+pandas
+plotly
+pydantic
+python-dotenv
+requests
+scikit-learn
+streamlit
+uvicorn
