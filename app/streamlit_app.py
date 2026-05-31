@@ -17,15 +17,15 @@ def get_score(comments):
     return score
 
 def get_overall_sentiment(score):
-    ovs = None
+    if score > 0.6:
+        return "success", "↑ Overwhelmingly Positive"
     if score > 0.2:
-        ovs = 2
-    elif score < -0.2:
-        ovs = 0
-    else:
-        ovs = 1
-    return ovs
-
+        return "success", "↑ Mostly Positive"
+    if score >= -0.2:
+        return "warning", "→ Mixed Reactions"
+    if score >= -0.6:
+        return "error", "↓ Mostly Negative"
+    return "error", "↓ Overwhelmingly Negative"
 
 def make_gauge(score, title):
     fig = go.Figure(go.Indicator(
@@ -93,7 +93,38 @@ with input_col:
 with action_col:
     analyse_clicked = st.button("Analyse", type="primary", width="stretch")
 
+st.divider()
+
+cards = st.empty()
+
+with cards.container():
+
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.info("""
+        **🤖 This Project**
+        
+        500M+ Indians type in Hinglish — a mix of Hindi and English. Most sentiment tools were built for English and fail silently on code-mixed text. This tool was built specifically for it.
+        """)
+
+    with col2:
+        st.success("""
+        **🤖 XLM-RoBERTa**
+        
+        A multilingual transformer pre-trained on 100 languages. Fine-tuned on more that 3000 manually annotated Hinglish YouTube comments. Understands context, slang, and code-mixing.
+        """)
+
+    with col3:
+        st.warning("""
+        **🤖 VADER**
+        
+        A rule-based sentiment tool specifically attuned to sentiments expressed in social media. *English* social media. Fast, popular and effective, but fails to capture hinglish sentiment accurately.
+        """)
+
 if analyse_clicked:
+    cards.empty()
     if not url.strip():
         st.error("Please enter a YouTube URL.")
         st.stop
@@ -168,13 +199,8 @@ if analyse_clicked:
                     st.header('XLM-RoBERTa',text_alignment="center",anchor=False)
 
                     #MODEL REACTION
-                    ovs = get_overall_sentiment(roberta_score)
-                    if ovs > 0.2:
-                        st.success(" ↑ Mostly Positive")
-                    elif ovs < -0.2:
-                        st.error(" ↓ Mostly Negative")
-                    else:
-                        st.warning(" → Mixed Reactions")
+                    reaction_type, reaction_text = get_overall_sentiment(roberta_score)
+                    getattr(st, reaction_type)(reaction_text)
 
                     pos, neg, neu = get_percentage(comments,roberta_pred)
                     c1, c2, c3, c4 = st.columns(4)
@@ -189,13 +215,8 @@ if analyse_clicked:
                     st.header("VADER",text_alignment="center",anchor=False)
 
                     #MODEL REACTION
-                    ovs = get_overall_sentiment(vader_score)
-                    if ovs > 0.2:
-                        st.success(" ↑ Mostly Positive")
-                    elif ovs < -0.2:
-                        st.error(" ↓ Mostly Negative")
-                    else:
-                        st.warning(" → Mixed Reactions")
+                    reaction_type, reaction_text = get_overall_sentiment(vader_score)
+                    getattr(st, reaction_type)(reaction_text)
                     pos, neg, neu = get_percentage(comments,vader_pred)
                     c1, c2, c3, c4 = st.columns(4)
                     c1.metric("Total Comments",    len(comments))
