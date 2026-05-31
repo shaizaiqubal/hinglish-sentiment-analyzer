@@ -7,14 +7,32 @@ load_dotenv()
 key = os.getenv('YOUTUBE_API_KEY')
 youtube = build('youtube','v3',developerKey=key)
 
-def fetch_data(url, max_comments=500):
-
+def extract_video_id(url):
     parsed = urlparse(url)
+    host = parsed.netloc.lower()
+    path = parsed.path.strip("/")
 
-    if not parsed.netloc:
-        pass
-    else:
-        vid_id = parse_qs(parsed.query)['v'][0]
+    if not host:
+        return None
+
+    if "youtu.be" in host:
+        return path.split("/")[0] if path else None
+
+    if "youtube.com" in host:
+        query_video_id = parse_qs(parsed.query).get("v")
+        if query_video_id:
+            return query_video_id[0]
+
+        path_parts = [part for part in path.split("/") if part]
+        if len(path_parts) >= 2 and path_parts[0] in {"shorts", "embed", "live"}:
+            return path_parts[1]
+
+    return None
+
+def fetch_data(url, max_comments=500):
+    vid_id = extract_video_id(url)
+    if not vid_id:
+        return None, None, []
 
     #fetch title
     req_title = youtube.videos().list(part = 'snippet',id = vid_id)
