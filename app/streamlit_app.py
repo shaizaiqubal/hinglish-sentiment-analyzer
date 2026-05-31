@@ -16,6 +16,17 @@ def get_score(comments):
 
     return score
 
+def get_overall_sentiment(score):
+    ovs = None
+    if score > 0.2:
+        ovs = 2
+    elif score < -0.2:
+        ovs = 0
+    else:
+        ovs = 1
+    return ovs
+
+
 def make_gauge(score, title):
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
@@ -58,6 +69,13 @@ def make_gauge(score, title):
     )
     return fig
 
+def get_percentage(comments,predictions):
+    total = len(comments)
+    pos = (predictions.count('Positive')/total )* 100
+    neg = (predictions.count('Negative')/total )* 100
+    neu = (predictions.count('Neutral')/total )* 100
+    return pos, neg, neu
+
 st.set_page_config(page_title="Hinglish Sentiment Analyzer", page_icon="🎬", layout='centered',)
 
 st.title("Hinglish Sentiment Analyzer",text_alignment='center',anchor=False)
@@ -78,83 +96,115 @@ with action_col:
 if analyse_clicked:
     if not url.strip():
         st.error("Please enter a YouTube URL.")
-    else:
-        with st.spinner("Fetching comments…"):
-            vid, vid_title, comments = fetch_data(url)
+        st.stop
 
-        if not vid_title:
-            st.error("Video not found! Double-check the URL and try again.")
-        else:
-            st.header(vid_title,anchor=False)
-            st.divider()
-            st.iframe(f"https://www.youtube.com/embed/{vid}", height=280, width="stretch")
-            st.divider()
+    if "youtube.com" not in url and "youtu.be" not in url:
+        st.error("Please enter a valid YouTube URL.")
+        st.stop()
+    
+    with st.spinner("Fetching comments…"):
+        vid, vid_title, comments = fetch_data(url)
 
-        if len(comments) == 0 :
-            st.error("The video has no comments! Please try another.")
-        try:
-            with st.spinner('Running sentiment analysis...'):
-                response = requests.post(
-                    'http://127.0.0.1:8000/predict',
-                    json={'comments': comments},
-                )
+    if not vid_title:
+        st.error("Video not found! Double-check the URL and try again.")
+        st.stop
+    
+    st.header(vid_title,anchor=False)
+    st.divider()
+    st.iframe(f"https://www.youtube.com/embed/{vid}", height=350, width="stretch")
+    st.divider()
 
-                if response.status_code == 400:
-                    st.warning(response.json()["detail"])
+    if len(comments) == 0 :
+        st.error("The video has no comments! Please try another.")
+        st.stop
+        
+    try:
+        with st.spinner('Running sentiment analysis...'):
+            response = requests.post(
+                'http://127.0.0.1:8000/predict',
+                json={'comments': comments},
+            )
 
-                elif response.status_code != 200:
-                    st.error(f"API request failed with status {response.status_code}: {response.text}")
+            if response.status_code == 400:
+                st.warning(response.json()["detail"])
+
+            elif response.status_code != 200:
+                st.error(f"API request failed with status {response.status_code}: {response.text}")
+            else:
+                result     = response.json()
+                roberta_pred = result["xlm-ROBERTa Predictions"]
+                vader_pred = result["VADER Predictions"]
+
+                 #MODEL AGREEMENT
+                roberta_score = get_score(roberta_pred)
+                vader_score = get_score(vader_pred)
+            
+                delta = abs(roberta_score - vader_score)
+                if delta < 0.2:
+                    st.success(
+                        f"↑ Strong agreement between models  \n"
+                        f"Score delta: **{delta:.3f}** &nbsp;|&nbsp; "
+                        f"RoBERTa: **{roberta_score:.3f}** &nbsp;|&nbsp; "
+                        f"VADER: **{vader_score:.3f}**"
+                    )
+                elif delta < 0.4:
+                    st.warning(
+                        f"→ Moderate divergence between models  \n"
+                        f"Score delta: **{delta:.3f}** &nbsp;|&nbsp; "
+                        f"RoBERTa: **{roberta_score:.3f}** &nbsp;|&nbsp; "
+                        f"VADER: **{vader_score:.3f}**"
+                    )
                 else:
-                    result     = response.json()
-                    roberta_pred = result["xlm-ROBERTa Predictions"]
-                    vader_pred = result["VADER Predictions"]
-                    roberta_score = get_score(roberta_pred)
-                    vader_score = get_score(vader_pred)
+                    st.error(
+                        f"↓ High divergence between models  \n"
+                        f"Score delta: **{delta:.3f}** &nbsp;|&nbsp; "
+                        f"RoBERTa: **{roberta_score:.3f}** &nbsp;|&nbsp; "
+                        f"VADER: **{vader_score:.3f}**"
+                    )
 
-                    delta = abs(roberta_score - vader_score)
-                    if delta < 0.15:
-                        st.success(
-                            f"Strong agreement between models  \n"
-                            f"Score delta: **{delta:.3f}** &nbsp;|&nbsp; "
-                            f"RoBERTa: **{roberta_score:.3f}** &nbsp;|&nbsp; "
-                            f"VADER: **{vader_score:.3f}**"
-                        )
-                    elif delta < 0.4:
-                        st.warning(
-                            f"Moderate divergence between models  \n"
-                            f"Score delta: **{delta:.3f}** &nbsp;|&nbsp; "
-                            f"RoBERTa: **{roberta_score:.3f}** &nbsp;|&nbsp; "
-                            f"VADER: **{vader_score:.3f}**"
-                        )
+                col1,col2 = st.columns(2,gap='large')
+
+                with col1:
+                    st.header('XLM-RoBERTa',text_alignment="center",anchor=False)
+
+                    #MODEL REACTION
+                    ovs = get_overall_sentiment(roberta_score)
+                    if ovs > 0.2:
+                        st.success(" ↑ Mostly Positive")
+                    elif ovs < -0.2:
+                        st.error(" ↓ Mostly Negative")
                     else:
-                        st.error(
-                            f"High divergence between models  \n"
-                            f"Score delta: **{delta:.3f}** &nbsp;|&nbsp; "
-                            f"RoBERTa: **{roberta_score:.3f}** &nbsp;|&nbsp; "
-                            f"VADER: **{vader_score:.3f}**"
-                        )
+                        st.warning(" → Mixed Reactions")
 
-                    col1,col2 = st.columns(2,gap='large')
-
-                    with col1:
-                        st.header('XLM-RoBERTa',text_alignment="center",anchor=False)
-                        c1, c2, c3, c4 = st.columns(4)
-                        c1.metric("Total",    len(comments))
-                        c2.metric("Positive", roberta_pred.count('Positive'))
-                        c3.metric("Negative", roberta_pred.count('Negative'))
-                        c4.metric("Neutral",  roberta_pred.count('Neutral'))
-                        st.plotly_chart(make_gauge(roberta_score,'XLM-RoBERTa'))
-                        
-                    with col2:
-                        st.header("VADER",text_alignment="center",anchor=False)
-                        c1, c2, c3, c4 = st.columns(4)
-                        c1.metric("Total",    len(comments))
-                        c2.metric("Positive", vader_pred.count('Positive'))
-                        c3.metric("Negative", vader_pred.count('Negative'))
-                        c4.metric("Neutral",  vader_pred.count('Neutral'))
-                        st.plotly_chart(make_gauge(vader_score,'VADER'))
-
+                    pos, neg, neu = get_percentage(comments,roberta_pred)
+                    c1, c2, c3, c4 = st.columns(4)
+                    c1.metric("Total",    len(comments))
+                    c2.metric("Positive", f"{pos :.0f}%")
+                    c3.metric("Negative", f"{neg :.0f}%")
+                    c4.metric("Neutral",  f"{neu :.0f}%")
                     
+                    st.plotly_chart(make_gauge(roberta_score,'XLM-RoBERTa'))
+                    
+                with col2:
+                    st.header("VADER",text_alignment="center",anchor=False)
 
-        except requests.RequestException as e:
-            st.error(f"Could not reach the API server: {e}")
+                    #MODEL REACTION
+                    ovs = get_overall_sentiment(vader_score)
+                    if ovs > 0.2:
+                        st.success(" ↑ Mostly Positive")
+                    elif ovs < -0.2:
+                        st.error(" ↓ Mostly Negative")
+                    else:
+                        st.warning(" → Mixed Reactions")
+                    pos, neg, neu = get_percentage(comments,vader_pred)
+                    c1, c2, c3, c4 = st.columns(4)
+                    c1.metric("Total Comments",    len(comments))
+                    c2.metric("Positive", f"{pos :.0f}%")
+                    c3.metric("Negative", f"{neg :.0f}%")
+                    c4.metric("Neutral",  f"{neu :.0f}%")
+                    st.plotly_chart(make_gauge(vader_score,'VADER'))
+
+                
+
+    except requests.RequestException as e:
+        st.error(f"Could not reach the API server: {e}")
