@@ -17,8 +17,8 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-model = XLMRobertaForSequenceClassification.from_pretrained('./model')
-tokenizer = XLMRobertaTokenizer.from_pretrained('./model')
+model = XLMRobertaForSequenceClassification.from_pretrained('shae2977/xlm-roberta-hinglish-sentiment-analysis')
+tokenizer = XLMRobertaTokenizer.from_pretrained('shae2977/xlm-roberta-hinglish-sentiment-analysis')
 
 vader = SentimentIntensityAnalyzer()
 
