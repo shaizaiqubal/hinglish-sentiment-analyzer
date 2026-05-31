@@ -53,16 +53,22 @@ def predict(input: commentsinput):
     try:
 
         #roberta
-        comment_tokens = tokenizer(input.comments, padding=True, truncation=True, return_tensors='pt')  
-        outputs = model(**comment_tokens)  
-        pred = torch.argmax(outputs.logits, dim=1)
-        predictions = pred.numpy().tolist()
+        results = []
+
+        batch_size = 50
+        for i in range(0, len(input.comments),batch_size):
+            batch = input.comments[i:batch_size+i]
+            comment_tokens = tokenizer(batch, padding=True, truncation=True, return_tensors='pt')  
+            outputs = model(**comment_tokens)  
+            pred = torch.argmax(outputs.logits, dim=1)
+            predictions = pred.numpy().tolist()
+            results.extend(predictions)
 
         label_map = {0: 'Negative', 1: 'Neutral', 2: 'Positive'}
 
         roberta_preds = []
-        for p in predictions:
-            roberta_preds.append(label_map[p])
+        for r in results:
+            roberta_preds.append(label_map[r])
 
         #vader
         vader_preds = []
