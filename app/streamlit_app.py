@@ -225,7 +225,16 @@ if analyse_clicked:
                     c4.metric("Neutral",  f"{neu :.0f}%")
                     st.plotly_chart(make_gauge(vader_score,'VADER'))
 
-                
+                if delta>0:
+                    df_results = pd.DataFrame({
+                    'Comment': comments,
+                    'XLM-RoBERTa': roberta_pred,
+                    'VADER': vader_pred })
+                    
+                    disagreements = df_results[df_results['XLM-RoBERTa'] != df_results['VADER']]
+                    
+                    st.header("Where The Models Disagree",anchor=None,text_alignment='center')
+                    st.dataframe(disagreements.sample(min(10, len(disagreements))), use_container_width=True,hide_index=True)
 
     except requests.RequestException as e:
         st.error(f"Could not reach the API server: {e}")
