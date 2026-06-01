@@ -5,6 +5,9 @@ plotly
 pydantic
 python-dotenv
 requests
-scikit-learn
+sentencepiece
 streamlit
+torch
+transformers
 uvicorn
+vaderSentiment
