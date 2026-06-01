@@ -1,5 +1,5 @@
 fastapi
-google-api-python-client
+google-api-python-client==2.169.0
 pandas
 plotly
 pydantic
