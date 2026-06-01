@@ -152,7 +152,7 @@ if analyse_clicked:
     try:
         with st.spinner('Running sentiment analysis...'):
             response = requests.post(
-                'http://127.0.0.1:8000/predict',
+                'https://huggingface.co/spaces/shae2977/hinglish-sentiment-analyzer/predict',
                 json={'comments': comments},
             )
 
