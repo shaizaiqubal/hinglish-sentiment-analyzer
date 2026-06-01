@@ -2,9 +2,12 @@ from transformers import XLMRobertaTokenizer, XLMRobertaForSequenceClassificatio
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from huggingface_hub import login
 import logging
 import torch
+import os
 
+login(token=os.getenv("HF_TOKEN"))
 
 logging.basicConfig(
     level=logging.INFO,
