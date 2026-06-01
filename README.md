@@ -15,7 +15,7 @@ app_port: 7860
 **Live Demo** → [Streamlit App](#) 
 **API** → [HuggingFace Spaces](https://huggingface.co/spaces/shae2977/hinglish-sentiment-analyzer)  
 **Model** → [shae2977/xlm-roberta-hinglish-sentiment-analysis](https://huggingface.co/shae2977/xlm-roberta-hinglish-sentiment-analysis)  
-**Dataset** → [shae2977/hinglish-youtube-sentiment-dataset](https://huggingface.co/datasets/shae2977/hinglish-youtube-sentiment-dataset)
+**Dataset** → [shae2977/hinglish-youtube-sentiment-dataset](https://huggingface.co/datasets/shae2977/hinglish-youtube-sentiments-dataset)
 
 ---
 
@@ -60,7 +60,7 @@ User → Streamlit App → FastAPI (HuggingFace Spaces, Docker) → XLM-RoBERTa
 
 ## Dataset
 
-3,190 Hinglish YouTube comments scraped from Indian general entertainment content (Bollywood, music, comedy, lifestyle) and manually annotated using Label Studio 
+3000+ Hinglish YouTube comments scraped from Indian general entertainment content (Bollywood, music, comedy, lifestyle) and manually annotated using Label Studio 
 | Class | Count | Percentage |
 |---|---|---|
 | Negative | 1,427 | 44.73% |
