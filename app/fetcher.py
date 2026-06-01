@@ -5,7 +5,7 @@ import os
 
 load_dotenv()
 key = os.getenv('YOUTUBE_API_KEY')
-youtube = build('youtube','v3',developerKey=key)
+youtube = build('youtube','v3',developerKey=key, cache_discovery=False)
 
 def extract_video_id(url):
     parsed = urlparse(url)
