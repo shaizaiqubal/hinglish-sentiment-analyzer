@@ -152,7 +152,7 @@ if analyse_clicked:
     try:
         with st.spinner('Running sentiment analysis...'):
             response = requests.post(
-                'https://huggingface.co/spaces/shae2977/hinglish-sentiment-analyzer/predict',
+                'https://shae2977-hinglish-sentiment-analyzer.hf.space/predict',
                 json={'comments': comments},
             )
 
