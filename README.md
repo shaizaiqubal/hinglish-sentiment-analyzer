@@ -12,7 +12,7 @@ app_port: 7860
 
 > Fine-tuned XLM-RoBERTa on a self-annotated 3,000+ sample Hinglish dataset, outperforming VADER baseline by 72% F1
 
-**Live Demo** → [Streamlit App](#) 
+**Live Demo** → [Streamlit App](https://hinglish-sentiment-analyzer.streamlit.app/) 
 **API** → [HuggingFace Spaces](https://huggingface.co/spaces/shae2977/hinglish-sentiment-analyzer)  
 **Model** → [shae2977/xlm-roberta-hinglish-sentiment-analysis](https://huggingface.co/shae2977/xlm-roberta-hinglish-sentiment-analysis)  
 **Dataset** → [shae2977/hinglish-youtube-sentiment-dataset](https://huggingface.co/datasets/shae2977/hinglish-youtube-sentiments-dataset)
@@ -25,6 +25,8 @@ Most sentiment models fail on Hinglish: the code-mixed Hindi-English language us
 
 This project fixes that.
 
+---
+![Hinglish Sentiment Analyzer Demo](assets/demo.png)
 ---
 
 ## Results
